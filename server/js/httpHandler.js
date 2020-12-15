@@ -13,8 +13,19 @@ module.exports.initialize = (queue) => {
 };
 
 module.exports.router = (req, res, next = ()=>{}) => {
-  console.log('Serving request type ' + req.method + ' for url ' + req.url);
-  res.writeHead(200, headers);
-  res.end();
+  //if type = get
+  if (req.method = 'GET') {
+    //if req.url = '/swim'
+    let commands = ['up', 'down', 'left', 'right'];
+    let randomIndex = Math.floor(Math.random() * commands.length);
+    let randomDirection = commands[randomIndex];
+    //array with 4 commands
+      //randomIndex = random number between 1 and 3
+      //respond with random swim command
+    res.write(randomDirection)
+    console.log('Serving request type ' + req.method + ' for url ' + req.url);
+    res.writeHead(200, headers);
+    res.end();
+  }
   next(); // invoke next() at the end of a request to help with testing!
 };
