@@ -17,7 +17,7 @@ module.exports.router = (req, res, next = ()=>{}) => {
   //if type = get
   if (req.method = 'GET') {
     //if req.url = '/swim'
-    if (req.url = '/swim') {
+    // if (req.url = '/swim') {
       let commands = ['up', 'down', 'left', 'right'];
       let randomIndex = Math.floor(Math.random() * commands.length);
       let randomDirection = commands[randomIndex];
@@ -27,7 +27,7 @@ module.exports.router = (req, res, next = ()=>{}) => {
       res.writeHead(200, headers);
       res.write(randomDirection);
       res.end();
-    }
+    // }
   }
   next(); // invoke next() at the end of a request to help with testing!
 };
