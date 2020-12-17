@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const expect = require('chai').expect;
 const server = require('./mockServer');
-
+const messageQueue = require('../js/messageQueue');
 const httpHandler = require('../js/httpHandler');
 
 
@@ -25,7 +25,7 @@ describe('server responses', () => {
   it('should respond to a GET request for a swim command', (done) => {
     let {req, res} = server.mock('/', 'GET');
     let commands = ['up', 'down', 'left', 'right'];
-
+    messageQueue.enqueue('up');
     httpHandler.router(req, res, () => {
       expect(res._responseCode).to.equal(200);
       expect(res._ended).to.equal(true);
@@ -34,9 +34,9 @@ describe('server responses', () => {
     });
   });
 
-  xit('should respond with 404 to a GET request for a missing background image', (done) => {
+  it('should respond with 404 to a GET request for a missing background image', (done) => {
     httpHandler.backgroundImageFile = path.join('.', 'spec', 'missing.jpg');
-    let {req, res} = server.mock('FILL_ME_IN', 'GET');
+    let {req, res} = server.mock('/background.jpg', 'GET');
 
     httpHandler.router(req, res, () => {
       expect(res._responseCode).to.equal(404);
@@ -45,9 +45,15 @@ describe('server responses', () => {
     });
   });
 
-  xit('should respond with 200 to a GET request for a present background image', (done) => {
-    // write your test here
-    done();
+  it('should respond with 200 to a GET request for a present background image', (done) => {
+    // httpHandler.backgroundImageFile = path.join('.', 'image', 'background.jpg');
+    // httpHandler.backgroundImageFile = path.join('..', 'image', 'background.jpg');
+    let {req, res} = server.mock('/background.jpg', 'GET');
+      httpHandler.router(req, res, () => {
+      expect(res._responseCode).to.equal(200);
+      expect(res._ended).to.equal(true);
+      done();
+    });
   });
 
   var postTestFile = path.join('.', 'spec', 'water-lg.jpg');
