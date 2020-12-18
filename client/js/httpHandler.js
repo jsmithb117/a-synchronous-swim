@@ -12,9 +12,20 @@
       success: (data) => {
         SwimTeam.move(data);
       }
-  })};
+    })};
 
-  setInterval(swimCommandGetter, 500);
+    // setInterval(swimCommandGetter, 500);
+
+  const backgroundGetter = () => {
+    $.ajax({
+      type: 'GET',
+      url: `${serverUrl}/background.jpg`,
+      success: (data) => {
+        console.log("Saved background image");
+        window.location = window.location.href;
+      }
+    })};
+    backgroundGetter();
   /////////////////////////////////////////////////////////////////////
   // The ajax file uploader is provided for your convenience!
   // Note: remember to fix the URL below.
