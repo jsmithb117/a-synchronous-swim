@@ -47,25 +47,29 @@ module.exports.router = (req, res, next = () => {}) => {
     case 'POST':
       if (req.url === '/background.jpg') {
         // console.log(req)
-        var image = Buffer.alloc(0);
+        let image = Buffer.alloc(0);
         req.on('data', (chunk) => {
           image  = Buffer.concat([image, chunk]);
         });
         req.on('end', () => {
           console.log('maybe it works');
-          fs.writeFile(module.exports.backgroundImageFile, image, (err) => {
+          let multiImage = multipart.getFile(image);
+          fs.writeFile(module.exports.backgroundImageFile, multiImage, (err) => {
             if (err) {
               console.error(err);
               next();
             } else {
               res.writeHead(201);
-              res.write(module.exports.backgroundImageFile)
+              res.write(module.exports.backgroundImageFile);
               res.end();
               next()
             }
           })
 
         });
+      } else {
+        res.writeHead(404, headers);
+        res.end();
       }
 
     default:
