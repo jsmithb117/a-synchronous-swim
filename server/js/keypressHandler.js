@@ -39,8 +39,6 @@ module.exports.initialize = (callback) => {
     // check to see if the keypress itself is a valid message
     if (isValidMessage(key.name)) {
       callback(key.name);
-      messageQueue.enqueue(key.name);
-      // console.log(messages)
       return; // don't do any more processing on this key
     }
     // otherwise build up a message from individual characters
@@ -49,7 +47,6 @@ module.exports.initialize = (callback) => {
       logKeypress('\n');
       if (message.length > 0) {
         callback(message);
-        messageQueue.enqueue(message);
         message = ''; // clear the buffer where we are collecting keystrokes
       }
     } else {

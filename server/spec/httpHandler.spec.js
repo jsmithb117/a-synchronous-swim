@@ -14,7 +14,6 @@ describe('server responses', () => {
     let {req, res} = server.mock('/', 'OPTIONS');
 
     httpHandler.router(req, res);
-    console.log(res)
     expect(res._responseCode).to.equal(200);
     expect(res._ended).to.equal(true);
     expect(res._data.toString()).to.be.empty;
@@ -24,12 +23,17 @@ describe('server responses', () => {
 
   it('should respond to a GET request for a swim command', (done) => {
     let {req, res} = server.mock('/', 'GET');
+    const queue = require('../js/messageQueue');
+    httpHandler.initialize(queue);
+
     let commands = ['up', 'down', 'left', 'right'];
-    messageQueue.enqueue('up');
+    let index = Math.floor(Math.random() * commands.length);
+    queue.enqueue('up');
+
     httpHandler.router(req, res, () => {
       expect(res._responseCode).to.equal(200);
       expect(res._ended).to.equal(true);
-      expect(commands.includes(res._data.toString())).to.equal(true);
+      expect(commands).to.contain(res._data.toString());
       done();
     });
   });
@@ -49,14 +53,15 @@ describe('server responses', () => {
     httpHandler.backgroundImageFile = path.join('.', 'spec', 'water-sm.jpg');
 
     let {req, res} = server.mock('/background.jpg', 'GET');
-      httpHandler.router(req, res, () => {
+
+    httpHandler.router(req, res, () => {
       expect(res._responseCode).to.equal(200);
       expect(res._ended).to.equal(true);
       done();
     });
   });
 
-  var postTestFile = path.join('.', 'spec', 'water-lg.jpg');
+  var postTestFile = path.join('.', 'spec', 'water-lg.multipart');
 
   it('should respond to a POST request to save a background image', (done) => {
     fs.readFile(postTestFile, (err, fileData) => {
@@ -73,13 +78,15 @@ describe('server responses', () => {
 
   it('should send back the previously saved image', (done) => {
     fs.readFile(postTestFile, (err, fileData) => {
-      httpHandler.backgroundImageFile = path.join('.', 'spec', 'water-lg.multipart');
+      httpHandler.backgroundImageFile = path.join('.', 'spec', 'temp.jpg');
       let post = server.mock('/background.jpg', 'POST', fileData);
 
       httpHandler.router(post.req, post.res, () => {
         let get = server.mock('/background.jpg', 'GET');
         httpHandler.router(get.req, get.res, () => {
-          expect(Buffer.compare(fileData, get.res._data)).to.equal(0);
+          const multipart = require('../js/multipartUtils');
+          var file = multipart.getFile(fileData);
+          expect(Buffer.compare(file.data, get.res._data)).to.equal(0);
           done();
         });
       });

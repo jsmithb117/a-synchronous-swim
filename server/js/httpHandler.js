@@ -2,11 +2,15 @@ const fs = require('fs');
 const path = require('path');
 const headers = require('./cors');
 const multipart = require('./multipartUtils');
-const messageQueue = require('./messageQueue')
 
 // Path for the background image ///////////////////////
 module.exports.backgroundImageFile = path.join('.', 'background.jpg');
 ////////////////////////////////////////////////////////
+
+let messageQueue = require('./messageQueue');
+module.exports.initialize = (queue) => {
+  messageQueue = queue;
+};
 
 module.exports.router = (req, res, next = () => {}) => {
   console.log('Serving request type ' + req.method + ' for url ' + req.url);
@@ -20,7 +24,7 @@ module.exports.router = (req, res, next = () => {}) => {
       } else if (req.url === '/background.jpg') {
         fs.readFile(module.exports.backgroundImageFile, (err, data) => {
           if (err) {
-            res.writeHead(404);
+            res.writeHead(404, headers);
           } else {
             res.writeHead(200, {
               'Content-Type': 'image/jpeg',
@@ -46,34 +50,22 @@ module.exports.router = (req, res, next = () => {}) => {
 
     case 'POST':
       if (req.url === '/background.jpg') {
-        // console.log(req)
         let image = Buffer.alloc(0);
         req.on('data', (chunk) => {
           image  = Buffer.concat([image, chunk]);
         });
         req.on('end', () => {
-          console.log('maybe it works');
           let multiImage = multipart.getFile(image);
-          fs.writeFile(module.exports.backgroundImageFile, multiImage, (err) => {
-            if (err) {
-              console.error(err);
-              next();
-            } else {
-              res.writeHead(201);
-              res.write(module.exports.backgroundImageFile);
-              res.end();
-              next()
-            }
+          fs.writeFile(module.exports.backgroundImageFile, multiImage.data, (err) => {
+            res.writeHead(err? 400 : 201, headers);
+            res.end();
+            next();
           })
-
-        });
-      } else {
-        res.writeHead(404, headers);
-        res.end();
-      }
-
+        })
+      };
+    break;
     default:
-      break;
+    break;
   }
 };
 
@@ -83,10 +75,7 @@ const chooseDirection = () => {
   return commands[randomIndex];
 }
 
-// let messageQueue = null;
-// module.exports.initialize = (queue) => {
-//   messageQueue = queue;
-// };
+
 
 // if (req.method === 'GET') {
 //   if (req.url === '/') {
